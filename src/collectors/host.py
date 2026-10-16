@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 import psutil
 
-_MACHINE_ID_PATHS = ("/etc/machine-id", "/var/lib/dbus/machine-id")
+_MACHINE_ID_PATHS = ("/rootfs/etc/machine-id", "/etc/machine-id", "/var/lib/dbus/machine-id")
 
 def _machine_id_source() -> str:
     if platform.system() == "Windows":

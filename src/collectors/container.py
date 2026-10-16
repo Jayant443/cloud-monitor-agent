@@ -1,8 +1,15 @@
 from datetime import datetime, timezone
 import math
 from typing import Any
-import docker
-from docker.errors import DockerException
+
+try:
+    import docker
+    from docker.errors import DockerException
+except Exception:
+    docker = None
+
+    class DockerException(Exception):
+        pass
 
 def _timestamp() -> datetime:
     return datetime.now(timezone.utc)
@@ -210,6 +217,12 @@ def _container_record(container: Any, sampled_at: datetime) -> dict[str, Any]:
 
 def container_usage(client: Any | None = None) -> dict[str, Any]:
     sampled_at = _timestamp()
+    if docker is None and client is None:
+        return {
+            "timestamp": sampled_at.isoformat(),
+            "containers": [],
+            "collection_errors": ["Docker SDK is not available"],
+        }
     owns_client = client is None
     try:
         client = client or docker.from_env()

@@ -1,5 +1,6 @@
 import hashlib
 import ipaddress
+import os
 import platform
 import socket
 from datetime import datetime, timezone
@@ -81,7 +82,7 @@ def host_identity() -> dict[str, Any]:
     return {
         "timestamp": timestamp,
         "machine_id": machine_identifier,
-        "hostname": platform.node(),
+        "hostname": os.getenv("AGENT_HOSTNAME", "").strip() or platform.node(),
         "operating_system": platform.system(),
         "os_version": _os_version(),
         "architecture": platform.machine(),

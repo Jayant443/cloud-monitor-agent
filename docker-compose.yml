@@ -1,0 +1,24 @@
+services:
+  agent:
+    build: .
+    restart: unless-stopped
+    pid: host
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    environment:
+      BACKEND_URL: ${BACKEND_URL:-http://127.0.0.1:8000}
+      API_KEY: ${API_KEY:-}
+      AGENT_HOSTNAME: ${AGENT_HOSTNAME:-}
+      COLLECTION_INTERVAL_SECONDS: ${COLLECTION_INTERVAL_SECONDS:-15}
+      DISK_MOUNT_POINTS: ${DISK_MOUNT_POINTS:-/rootfs}
+      BACKEND_TIMEOUT_SECONDS: ${BACKEND_TIMEOUT_SECONDS:-5}
+      APP_HEALTH_ENDPOINTS: ${APP_HEALTH_ENDPOINTS:-[]}
+      APP_HEALTH_TIMEOUT_SECONDS: ${APP_HEALTH_TIMEOUT_SECONDS:-5}
+      PROCESS_MONITOR_ENABLED: ${PROCESS_MONITOR_ENABLED:-false}
+      PROCESS_MONITOR_PIDS: ${PROCESS_MONITOR_PIDS:-}
+      PROCESS_MONITOR_NAMES: ${PROCESS_MONITOR_NAMES:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}

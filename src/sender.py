@@ -5,15 +5,23 @@ import requests
 logger = logging.getLogger(__name__)
 _METRICS_PATH = "/api/metrics"
 
-def send_metrics(payload: dict[str, Any], backend_url: str, timeout: float = 5.0,) -> bool:
+def send_metrics(
+    payload: dict[str, Any],
+    backend_url: str,
+    timeout: float = 5.0,
+    api_key: str | None = None,
+) -> bool:
     base_url = backend_url.strip().rstrip("/")
     if not base_url:
         logger.warning("Metrics send skipped: backend URL is not configured")
         return False
 
     url = base_url if base_url.endswith(_METRICS_PATH) else base_url + _METRICS_PATH
+    headers: dict[str, str] = {}
+    if api_key and api_key.strip():
+        headers["X-API-Key"] = api_key.strip()
     try:
-        response = requests.post(url, json=payload, timeout=timeout)
+        response = requests.post(url, json=payload, timeout=timeout, headers=headers or None)
     except requests.RequestException as exc:
         logger.warning(
             "Metrics send failed: %s",

@@ -7,6 +7,7 @@ import signal
 import threading
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from application_health import check_endpoints
 from collectors.cpu import cpu_usage
@@ -115,12 +116,20 @@ def main(argv: list[str] | None = None) -> None:
         level=getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    if Path("/host/proc").is_dir():
+        try:
+            import psutil
+
+            psutil.PROCFS_PATH = "/host/proc"
+        except Exception:
+            logger.warning("Could not point psutil at /host/proc, using container /proc")
     monitor = AgentHealthMonitor()
     endpoints = _configured_endpoints()
     process_enabled, process_pids, process_names = _configured_processes()
-    collection_interval = _float_setting("COLLECTION_INTERVAL_SECONDS", 2)
+    collection_interval = _float_setting("COLLECTION_INTERVAL_SECONDS", 15)
     backend_url = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
     backend_timeout = _float_setting("BACKEND_TIMEOUT_SECONDS", 5)
+    api_key = os.getenv("API_KEY", "").strip() or None
     mount_points = _csv_setting("DISK_MOUNT_POINTS") or ["/"]
     max_cycles = 1 if args.once else _max_cycles_setting()
 
@@ -176,7 +185,7 @@ def main(argv: list[str] | None = None) -> None:
             }
             json_payload = _json_compatible(payload)
             print(json.dumps(json_payload, allow_nan=False), flush=True)
-            send_metrics(json_payload, backend_url, backend_timeout)
+            send_metrics(json_payload, backend_url, backend_timeout, api_key)
         except Exception:
             logger.exception("Collection cycle failed, continuing")
 

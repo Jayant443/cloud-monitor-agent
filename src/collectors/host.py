@@ -39,12 +39,17 @@ def _stable_machine_identifier() -> str:
     return f"host-{digest}"
 
 def _os_version() -> str:
-    if platform.system() == "Linux":
-        try:
-            release = platform.freedesktop_os_release()
-            return release.get("PRETTY_NAME") or platform.release()
-        except (AttributeError, OSError):
-            pass
+    try:
+        for path in ("/rootfs/etc/os-release", "/etc/os-release"):
+            try:
+                for line in Path(path).read_text(encoding="utf-8").splitlines():
+                    if line.startswith("PRETTY_NAME="):
+                        return line.split("=", 1)[1].strip().strip('"').strip("'")
+            except (OSError, UnicodeError):
+                continue
+    except Exception:
+        pass
+
     return platform.release()
 
 def _available_ip_addresses() -> list[str]:

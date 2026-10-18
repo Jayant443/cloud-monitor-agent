@@ -22,3 +22,7 @@ services:
       PROCESS_MONITOR_PIDS: ${PROCESS_MONITOR_PIDS:-}
       PROCESS_MONITOR_NAMES: ${PROCESS_MONITOR_NAMES:-}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+volumes:
+  - /etc/os-release:/rootfs/etc/os-release:ro
+  - /etc/machine-id:/rootfs/etc/machine-id:ro
